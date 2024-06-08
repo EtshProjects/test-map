@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ar">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Custom Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #f4f4f4;
+        direction: rtl; /* Right-to-left layout for Arabic */
+        display: flex;
+        height: 100vh;
+      }
+      #map {
+        height: 100%;
+        width: 75%;
+      }
+      #controls {
+        width: 25%;
+        background: #fff;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-sizing: border-box;
+        overflow-y: auto;
+      }
+      .dropdown {
+        margin-bottom: 20px;
+        position: relative;
+      }
+      .dropdown label {
+        display: block;
+        background: #fff;
+        border: 1px solid #ccc;
+        padding: 10px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .checkbox-container {
+        display: none;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-top: none;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .checkbox-container label {
+        display: block;
+        padding: 10px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .checkbox-container input[type="checkbox"] {
+        margin-left: 10px;
+      }
+      .leaflet-container {
+        background: #e6e6e6;
+        border: 1px solid #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="controls">
+      <div class="dropdown">
+        <label for="commercial-dropdown">نوع المشروع</label>
+        <div id="commercial-dropdown" class="checkbox-container">
+          <label
+            ><input
+              type="checkbox"
+              class="location-checkbox"
+              data-type="commercial"
+              data-lat="24.7136"
+              data-lng="46.6753"
+            />
+            مشروع 1</label
+          >
+          <!-- Add more commercial locations here -->
+        </div>
+      </div>
+      <div class="dropdown">
+        <label for="residential-dropdown">المدينة</label>
+        <div id="residential-dropdown" class="checkbox-container">
+          <label
+            ><input
+              type="checkbox"
+              class="location-checkbox"
+              data-type="residential"
+              data-lat="24.774265"
+              data-lng="46.738586"
+            />
+            مدينة 1</label
+          >
+          <!-- Add more residential locations here -->
+        </div>
+      </div>
+      <div class="dropdown">
+        <label for="plan-dropdown">المخطط</label>
+        <div id="plan-dropdown" class="checkbox-container">
+          <label
+            ><input
+              type="checkbox"
+              class="location-checkbox"
+              data-type="plan"
+              data-lat="24.774265"
+              data-lng="46.738586"
+            />
+            مخطط 1</label
+          >
+          <!-- Add more plan locations here -->
+        </div>
+      </div>
+    </div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+      const map = L.map("map").setView([24.7136, 46.6753], 10); // Center on Riyadh
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+      }).addTo(map);
+
+      const customIcon = L.icon({
+        iconUrl:
+          "https://lh3.googleusercontent.com/u/0/drive-viewer/AKGpiha1EUUQulizaWoApgwoyNLxpXybR4mWsmcAJXb9CqhfwSYOc_X1lVwtg5_k6uolGwU0xxZnqlUwCNvxGQh1hZImiVYOZYJExQ=w1920-h1039",
+        iconSize: [100, 100], // increased size of the icon
+        iconAnchor: [50, 50], // point of the icon which will correspond to marker's location
+        popupAnchor: [0, -50], // point from which the popup should open relative to the iconAnchor
+      });
+
+      const markers = [];
+
+      function toggleMarker(lat, lng, name, show) {
+        const marker = markers.find((m) => m.lat === lat && m.lng === lng);
+        if (show) {
+          if (!marker) {
+            const newMarker = L.marker([lat, lng], { icon: customIcon })
+              .addTo(map)
+              .bindPopup(name);
+            markers.push({ lat, lng, instance: newMarker });
+          }
+        } else if (marker) {
+          map.removeLayer(marker.instance);
+          const index = markers.indexOf(marker);
+          if (index > -1) {
+            markers.splice(index, 1);
+          }
+        }
+      }
+
+      document.querySelectorAll(".location-checkbox").forEach((checkbox) => {
+        checkbox.addEventListener("change", (e) => {
+          const lat = parseFloat(e.target.dataset.lat);
+          const lng = parseFloat(e.target.dataset.lng);
+          const name = e.target.parentElement.innerText;
+          toggleMarker(lat, lng, name, e.target.checked);
+          if (e.target.checked) {
+            map.flyTo([lat, lng], 14, {
+              animate: true,
+              duration: 2, // animation duration in seconds
+            });
+          }
+        });
+      });
+
+      document.querySelectorAll(".dropdown > label").forEach((label) => {
+        label.addEventListener("click", () => {
+          const container = label.nextElementSibling;
+          container.style.display =
+            container.style.display === "block" ? "none" : "block";
+        });
+      });
+    </script>
+  </body>
+</html>
